@@ -1,3 +1,4 @@
+// SoundSimulator.jsx
 import { useState, useEffect, useRef } from 'react';
 
 export default function SoundSimulator() {
@@ -20,33 +21,41 @@ export default function SoundSimulator() {
     let gainNode = null;
     
     if (isPlaying) {
+      // Create audio context
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
       oscillator = audioContext.createOscillator();
       gainNode = audioContext.createGain();
       
+      // Set properties
       oscillator.type = 'sine';
       oscillator.frequency.value = frequency;
       gainNode.gain.value = amplitude / 100;
       
+      // Connect nodes
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
       
+      // Start oscillator
       oscillator.start();
       
+      // Set timer for automatic stopping
       setRemainingTime(duration);
       
+      // Clear any existing timer
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
       
+      // Create a countdown timer
       timerRef.current = setInterval(() => {
         setRemainingTime(prev => {
           if (prev <= 0.1) {
+            // Stop playing when timer ends
             setIsPlaying(false);
             clearInterval(timerRef.current);
             return 0;
           }
-          return prev - 0.1;
+          return prev - 0.1; // Update every 100ms
         });
       }, 100);
     }
@@ -69,12 +78,13 @@ export default function SoundSimulator() {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
     
+    // Draw sine wave
     ctx.beginPath();
     ctx.moveTo(0, centerY);
     
     for (let x = 0; x < canvasWidth; x++) {
-      const normalizedFreq = frequency / 440;
-      const scaleFactor = 20;
+      const normalizedFreq = frequency / 440; // Scale based on A4 = 440Hz
+      const scaleFactor = 20; // Adjust visualization scale
       const y = centerY - Math.sin(x * normalizedFreq / scaleFactor) * (amplitude);
       ctx.lineTo(x, y);
     }
@@ -83,6 +93,7 @@ export default function SoundSimulator() {
     ctx.lineWidth = 2;
     ctx.stroke();
     
+    // Draw baseline
     ctx.beginPath();
     ctx.moveTo(0, centerY);
     ctx.lineTo(canvasWidth, centerY);
@@ -175,7 +186,7 @@ export default function SoundSimulator() {
         <div className="flex flex-row justify-between gap-4">
           <button 
             onClick={() => setIsPlaying(!isPlaying)}
-            className={\`flex-1 py-2 rounded-lg font-bold \${isPlaying ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}\`}
+            className={`flex-1 py-2 rounded-lg font-bold ${isPlaying ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}
           >
             {isPlaying ? 'הפסק צליל' : 'השמע צליל'}
           </button>
